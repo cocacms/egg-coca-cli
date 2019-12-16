@@ -6,6 +6,10 @@
   "bin": {
     "coca": "./lib/coca.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rojer95/egg-coca-cli.git"
+  },
   "dependencies": {
     "commander": "^4.0.1"
   },
