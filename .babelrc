@@ -1,18 +1,4 @@
 {
   "presets": ["es2015"],
-  "plugins": [
-    "syntax-dynamic-import",
-    "transform-async-to-generator",
-    "transform-object-rest-spread",
-    [
-      "transform-runtime",
-      {
-        "helpers": false,
-        "polyfill": false,
-        "regenerator": true,
-        "moduleName": "babel-runtime"
-      }
-    ]
-  ],
-  "ignore": ["src/assets"]
+  "plugins": ["transform-runtime", "babel-plugin-transform-async-to-generator"]
 }

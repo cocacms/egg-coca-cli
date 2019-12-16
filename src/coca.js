@@ -6,10 +6,11 @@ const fs = require('fs');
 const exec = require('child_process').exec;
 
 const runner = sh => {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     exec(sh, { cwd: process.cwd() }, (err, msg) => {
       if (err) {
-        reject(err);
+        console.log(err.message);
+        resolve();
       } else {
         console.log(msg);
         resolve();
