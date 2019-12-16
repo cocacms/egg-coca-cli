@@ -48,16 +48,15 @@ program
   )
   .action(async function(options) {
     const plugins = require(path.join(process.cwd(), './config/plugin.js'));
-
     for (const pluginName of Object.keys(plugins)) {
       const pkg = plugins[pluginName];
       if (!pkg.enable || !pkg.package) continue;
+      const migrations_dir =path.join(process.cwd(), './node_modules', pkg.package , 'migrations')
       const has_mig_dir = fs.existsSync(migrations_dir)
       if (!has_mig_dir) continue;
-
-      const migrations_dir =path.join(process.cwd(), './node_modules', pkg.package , 'migrations')
       const stat = fs.statSync(migrations_dir);
       if (!stat.isDirectory()) continue;
+
       console.log(`运行插件 [${pluginName}] 的migrations文件...`);
       await runner(
         `npx sequelize db:migrate --env=${options.env} --config=${path.join(
