@@ -22,7 +22,6 @@ const runner = sh => {
 program.version('1.0.0');
 
 program.command('rsa').action(async function() {
-  console.log('process.cwd() is ', process.cwd());
   const private_path = path.join(
     process.cwd(),
     './config/rsa/rsa_private_key.pem'
@@ -34,6 +33,10 @@ program.command('rsa').action(async function() {
 
   await runner(`openssl genrsa -out ${private_path} 1024`);
   await runner(`openssl rsa -in ${private_path} -pubout -out ${public_path}`);
+
+  console.log(`生成rsa文件成功`);
+  console.log(`私钥路径:${private_path}`);
+  console.log(`公钥路径:${public_path}`);
 });
 
 program
@@ -44,35 +47,27 @@ program
     'development'
   )
   .action(async function(options) {
-    console.log('process.cwd() is ', process.cwd());
+    const plugins = require(path.join(process.cwd(), './config/plugin.js'));
 
-    const plugins = fs.readdirSync(path.join(process.cwd(), './lib/plugin'));
+    for (const pluginName of Object.keys(plugins)) {
+      const pkg = plugins[pluginName];
+      if (!pkg.enable || !pkg.package) continue;
+      const has_mig_dir = fs.existsSync(migrations_dir)
+      if (!has_mig_dir) continue;
 
-    for (const plugin of plugins) {
-      const stat = fs.statSync(
-        path.join(process.cwd(), './lib/plugin', plugin)
+      const migrations_dir =path.join(process.cwd(), './node_modules', pkg.package , 'migrations')
+      const stat = fs.statSync(migrations_dir);
+      if (!stat.isDirectory()) continue;
+      console.log(`运行插件 [${pluginName}] 的migrations文件...`);
+      await runner(
+        `npx sequelize db:migrate --env=${options.env} --config=${path.join(
+          process.cwd(),
+          './database/config.json'
+        )} --migrations-path=${migrations_dir}`
       );
-
-      if (
-        stat.isDirectory() &&
-        fs.existsSync(
-          path.join(process.cwd(), './lib/plugin', plugin, 'migrations')
-        )
-      ) {
-        await runner(
-          `npx sequelize db:migrate --env=${options.env} --config=${path.join(
-            process.cwd(),
-            './database/config.json'
-          )} --migrations-path=${path.join(
-            process.cwd(),
-            './lib/plugin',
-            plugin,
-            'migrations'
-          )}`
-        );
-      }
     }
 
+    console.log(`运行项目根目录下的migrations文件...`);
     await runner(
       `npx sequelize db:migrate --env=${options.env} --config=${path.join(
         process.cwd(),
@@ -117,7 +112,6 @@ program
     false
   )
   .action(function(options) {
-    console.log('process.cwd() is ', process.cwd());
     const args = [];
     if (options.env) args.push(`--env=${options.env}`);
     if (options.config) args.push(`--config=${options.config}`);
