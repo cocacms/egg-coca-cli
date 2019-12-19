@@ -21,7 +21,7 @@ const runner = sh => {
 
 program.version('1.0.0');
 
-program.command('rsa').action(async function() {
+program.command('rsa:build').action(async function() {
   const private_path = path.join(
     process.cwd(),
     './config/rsa/rsa_private_key.pem'
@@ -40,7 +40,7 @@ program.command('rsa').action(async function() {
 });
 
 program
-  .command('migrate')
+  .command('db:migrate')
   .option(
     '-e, --env [env]',
     'The environment to run the command in',
@@ -75,8 +75,14 @@ program
     );
   });
 
+program.command('db:init').action(async function() {
+  console.log(`初始化 Migrations 配置文件和目录`);
+  await runner(`npx sequelize init:config`);
+  await runner(`npx sequelize init:migrations`);
+})
+
 program
-  .command('add')
+  .command('db:add')
   .description('add a migration')
   .option('-p, --plugin [name]', 'Which setup mode to use')
   .option(
