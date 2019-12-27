@@ -34,7 +34,7 @@ program.command('rsa:build').action(async function() {
   await runner(`openssl genrsa -out ${private_path} 1024`);
   await runner(`openssl rsa -in ${private_path} -pubout -out ${public_path}`);
 
-  console.log(`生成rsa文件成功`);
+  console.log('生成rsa文件成功');
   console.log(`私钥路径:${private_path}`);
   console.log(`公钥路径:${public_path}`);
 });
@@ -50,9 +50,20 @@ program
     const plugins = require(path.join(process.cwd(), './config/plugin.js'));
     for (const pluginName of Object.keys(plugins)) {
       const pkg = plugins[pluginName];
-      if (!pkg.enable || !pkg.package) continue;
-      const migrations_dir =path.join(process.cwd(), './node_modules', pkg.package , 'migrations')
-      const has_mig_dir = fs.existsSync(migrations_dir)
+      if (!pkg.enable) continue;
+      let migrations_dir;
+
+      if (pkg.package) {
+        migrations_dir = path.join(process.cwd(), './node_modules', pkg.package, 'migrations');
+      }
+
+      if (pkg.path) {
+        migrations_dir = path.join(pkg.path, 'migrations');
+      }
+
+      if (!migrations_dir) continue;
+
+      const has_mig_dir = fs.existsSync(migrations_dir);
       if (!has_mig_dir) continue;
       const stat = fs.statSync(migrations_dir);
       if (!stat.isDirectory()) continue;
@@ -66,7 +77,7 @@ program
       );
     }
 
-    console.log(`运行项目根目录下的migrations文件...`);
+    console.log('运行项目根目录下的migrations文件...');
     await runner(
       `npx sequelize db:migrate --env=${options.env} --config=${path.join(
         process.cwd(),
@@ -76,10 +87,10 @@ program
   });
 
 program.command('db:init').action(async function() {
-  console.log(`初始化 Migrations 配置文件和目录`);
-  await runner(`npx sequelize init:config`);
-  await runner(`npx sequelize init:migrations`);
-})
+  console.log('初始化 Migrations 配置文件和目录');
+  await runner('npx sequelize init:config');
+  await runner('npx sequelize init:migrations');
+});
 
 program
   .command('db:add')
